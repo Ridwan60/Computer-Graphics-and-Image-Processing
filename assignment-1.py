@@ -6,56 +6,67 @@ plt.xlabel("X Axis")
 plt.ylabel("Y Axis")
 
 def bres(x1, y1, x2, y2):
-    x, y = x1, y1
-    dx = abs(x2 - x1)
-    dy = abs(y2 - y1)
-    gradient = dy / float(dx)
+    # Determine if the slope is steep
+    is_steep = abs(y2 - y1) > abs(x2 - x1)
 
-    if gradient > 1:
-        dx, dy = dy, dx
-        x, y = y, x
+    # If the slope is steep, swap x and y coordinates
+    if is_steep:
         x1, y1 = y1, x1
         x2, y2 = y2, x2
 
-    p = 2 * dy - dx
-    
+    # Ensure the line is always drawn from left to right
+    if x1 > x2:
+        x1, x2 = x2, x1
+        y1, y2 = y2, y1
+
+    dx = x2 - x1
+    dy = abs(y2 - y1)
+    error = dx / 2
+    y_step = 1 if y1 < y2 else -1
+    y = y1
+
     # Initialize the plotting points
-    xcoordinates = [x]
-    ycoordinates = [y]
+    points = []
 
-    for k in range(2, dx + 2):
-        if p > 0:
-            y = y + 1 if y < y2 else y - 1
-            p = p + 2 * (dy - dx)
-        else:
-            p = p + 2 * dy
+    for x in range(x1, x2 + 1):
+        # Append points depending on the steepness of the slope
+        points.append((y, x) if is_steep else (x, y))
 
-        x = x + 1 if x < x2 else x - 1
+        error -= dy
+        if error < 0:
+            y += y_step
+            error += dx
 
-        xcoordinates.append(x)
-        ycoordinates.append(y)
+    # Determine the size of the grid
+    size_y = max(y1, y2) + 1 
+    size_x = max(x1, x2) + 1 
 
     # Create a grid of zeros representing the coordinates
-    grid = np.zeros((max(ycoordinates) + 1, max(xcoordinates) + 1))
+    grid = np.zeros((size_y, size_x))
 
     # Fill the grid with 1s at the coordinates
-    for x, y in zip(xcoordinates, ycoordinates):
-        grid[y, x] = 1
+    for point in points:
+        y, x = point
+        if 0 <= y < size_y and 0 <= x < size_x:
+            grid[y, x] = 1
 
     # Show the grid as an image with filled squares
     plt.imshow(grid, cmap='gray', origin='lower')
-    
+
     # Add borders to the blocks
-    for x, y in zip(xcoordinates, ycoordinates):
-        plt.plot([x - 0.5, x + 0.5, x + 0.5, x - 0.5, x - 0.5], [y - 0.5, y - 0.5, y + 0.5, y + 0.5, y - 0.5], color='black')
+    for point in points:
+        y, x = point
+        if 0 <= y < size_y and 0 <= x < size_x:
+            plt.plot([x - 0.5, x + 0.5, x + 0.5, x - 0.5, x - 0.5], 
+                     [y - 0.5, y - 0.5, y + 0.5, y + 0.5, y - 0.5], color='black')
 
     plt.show()
 
 def main():
-    x1 = int(input("Enter the Starting point of x: "))
-    y1 = int(input("Enter the Starting point of y: "))
-    x2 = int(input("Enter the end point of x: "))
-    y2 = int(input("Enter the end point of y: "))
+    x1 = 1
+    y1 = 1
+    x2 = 8
+    y2 = 4
 
     bres(x1, y1, x2, y2)
 
